@@ -1,7 +1,16 @@
 use std::io::{Read, Write};
-use std::net::{TcpStream, Shutdown};
+use std::net::{Shutdown, TcpStream};
+use commons::c2s_data_packet::{C2SDataPacket, Packet};
+use commons::serialization::{Serialization, SerializationImpl};
 
 fn main() {
+    let c2s_data_packet = C2SDataPacket::new("hello");
+
+    let serializer = SerializationImpl;
+
+    // serialize packet
+    let serialized = serializer.serialize(&c2s_data_packet).unwrap();
+
     let mut stream = match TcpStream::connect("127.0.0.1:8080") {
         Ok(stream) => stream,
         Err(e) => {
@@ -10,7 +19,7 @@ fn main() {
         }
     };
 
-    if let Err(e) = stream.write_all(b"Hello World!\n") {
+    if let Err(e) = stream.write_all(serialized.as_bytes()) {
         eprintln!("Failed to write to server: {}", e);
         return;
     }
@@ -27,5 +36,6 @@ fn main() {
         return;
     }
 
-    println!("Server response: {}", response);
+    println!("server response: {}", response);
+
 }
